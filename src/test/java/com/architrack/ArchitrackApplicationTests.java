@@ -1,4 +1,4 @@
-package com.architrack.architrack;
+package com.architrack;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
