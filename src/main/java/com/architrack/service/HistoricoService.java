@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import com.architrack.controller.HistoricoController;
 import com.architrack.dozermapper.DozerMapper;
 import com.architrack.entities.Historico;
 import com.architrack.exception.ResponseBadRequestHandlerException;
@@ -26,12 +27,14 @@ public class HistoricoService {
 		Historico historico = repository.findById(id).orElseThrow( 
 				() -> new ResponseNotFoundHandlerException("Id not found"));
 		HistoricoVo vo = DozerMapper.parseObjectForEntity(historico, HistoricoVo.class);
+		vo.add(linkTo(methodOn(HistoricoController.class).findById(id)).withSelfRel());
 		return vo;
 	}
 	
 	public List<HistoricoVo> findAll(){
 		List<Historico>list = repository.findAll();
 		List<HistoricoVo>listVo = DozerMapper.parseListObjectForEntity(list, HistoricoVo.class);
+		listVo.stream().forEach(x -> x.add(linkTo(methodOn(HistoricoController.class).findById(x.getKey())).withSelfRel()));
 		return listVo;
 	}
 	
@@ -41,6 +44,7 @@ public class HistoricoService {
 		}
 		Historico hist = DozerMapper.parseObjectForEntity(historicoVo, Historico.class);
 		HistoricoVo vo = DozerMapper.parseObjectForEntity(repository.save(hist),HistoricoVo.class);
+		vo.add(linkTo(methodOn(HistoricoController.class).findById(hist.getId())).withSelfRel());
 		return vo;
 	}
 	
@@ -53,6 +57,7 @@ public class HistoricoService {
 		historico.setDataMudanca(historicoVo.getDataMudanca());
 		historico.setDescricaoMudanca(historicoVo.getDescricaoMudanca());
 		HistoricoVo vo = DozerMapper.parseObjectForEntity(repository.save(historico), HistoricoVo.class);
+		vo.add(linkTo(methodOn(HistoricoController.class).findById(historico.getId())).withSelfRel());
 		return vo;
 	}
 	

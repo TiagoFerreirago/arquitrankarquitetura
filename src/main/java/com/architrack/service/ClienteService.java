@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import com.architrack.controller.ClienteController;
 import com.architrack.dozermapper.DozerMapper;
 import com.architrack.entities.Cliente;
 import com.architrack.exception.ResponseBadRequestHandlerException;
@@ -27,6 +28,7 @@ public class ClienteService {
 		Cliente cliente = repository.findById(id).orElseThrow(
 				() -> new ResponseNotFoundHandlerException("Id not found"));
 		ClienteVo vo = DozerMapper.parseObjectForEntity(cliente, ClienteVo.class);
+		vo.add(linkTo(methodOn(ClienteController.class).findById(id)).withSelfRel());
 		return vo;
 		
 	}
@@ -34,6 +36,7 @@ public class ClienteService {
 	public List<ClienteVo> findAll() {
 		List<Cliente>cliente = repository.findAll();
 		List<ClienteVo>listVo = DozerMapper.parseListObjectForEntity(cliente, ClienteVo.class);
+		listVo.stream().forEach(x -> x.add(linkTo(methodOn(ClienteController.class).findById(x.getKey())).withSelfRel()));
 		return listVo;
 	}
 	
@@ -43,6 +46,7 @@ public class ClienteService {
 		}
 		Cliente cli = DozerMapper.parseObjectForEntity(cliente, Cliente.class);
 		ClienteVo vo = DozerMapper.parseObjectForEntity(repository.save(cli), ClienteVo.class);
+		vo.add(linkTo(methodOn(ClienteController.class).findById(cli.getId())).withSelfRel());
 		return vo;
 	}
 	
@@ -64,6 +68,7 @@ public class ClienteService {
 		cliente.setTelefone(clienteVo.getTelefone());
 		
 		ClienteVo vo = DozerMapper.parseObjectForEntity(repository.save(cliente), ClienteVo.class);
+		vo.add(linkTo(methodOn(ClienteController.class).findById(cliente.getId())).withSelfRel());
 		return vo;
 	}
 	

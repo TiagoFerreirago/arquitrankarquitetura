@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import com.architrack.controller.EnderecoController;
 import com.architrack.dozermapper.DozerMapper;
 import com.architrack.entities.Endereco;
 import com.architrack.exception.ResponseBadRequestHandlerException;
@@ -29,6 +30,7 @@ public class EnderecoService {
 		Endereco endereco = repository.findById(id).orElseThrow(
 				() -> new ResponseNotFoundHandlerException("Id not found"));
 		EnderecoVo vo = DozerMapper.parseObjectForEntity(endereco, EnderecoVo.class);
+		vo.add(linkTo(methodOn(EnderecoController.class).findById(id)).withSelfRel());
 		return vo;
 		
 	}
@@ -36,6 +38,7 @@ public class EnderecoService {
 	public List<EnderecoVo> findAll() {
 		List<Endereco>endereco = repository.findAll();
 		List<EnderecoVo>listVo = DozerMapper.parseListObjectForEntity(endereco, EnderecoVo.class);
+		listVo.stream().forEach(x -> x.add(linkTo(methodOn(EnderecoController.class).findById(x.getKey())).withSelfRel()));
 		return listVo;
 	}
 	@Transactional
@@ -45,6 +48,7 @@ public class EnderecoService {
 		}
 		Endereco arq = DozerMapper.parseObjectForEntity(enderecoVo, Endereco.class);
 		EnderecoVo vo = DozerMapper.parseObjectForEntity(repository.save(arq), EnderecoVo.class);
+		vo.add(linkTo(methodOn(EnderecoController.class).findById(arq.getId())).withSelfRel());
 		return vo;
 	}
 	@Transactional
@@ -62,6 +66,7 @@ public class EnderecoService {
 		endereco.setRua(enderecoVo.getRua());
 		
 		EnderecoVo vo = DozerMapper.parseObjectForEntity(repository.save(endereco), EnderecoVo.class);
+		vo.add(linkTo(methodOn(EnderecoController.class).findById(endereco.getId())).withSelfRel());
 		return vo;
 	}
 	@Transactional

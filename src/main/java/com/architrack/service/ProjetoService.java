@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import com.architrack.controller.ProjetoController;
 import com.architrack.dozermapper.DozerMapper;
 import com.architrack.entities.Projeto;
 import com.architrack.exception.ResponseBadRequestHandlerException;
@@ -27,12 +28,14 @@ public class ProjetoService {
 		Projeto projeto = repository.findById(id).orElseThrow(
 				() -> new ResponseNotFoundHandlerException("Id not found"));
 		ProjetoVo vo = DozerMapper.parseObjectForEntity(projeto, ProjetoVo.class);
+		vo.add(linkTo(methodOn(ProjetoController.class).findById(id)).withSelfRel());
 		return vo;
 	}
 	
 	public List<ProjetoVo> findAll(){
 		List<Projeto> projetos = repository.findAll();
 		List<ProjetoVo> listVo = DozerMapper.parseListObjectForEntity(projetos, ProjetoVo.class);
+		listVo.stream().forEach(x -> x.add(linkTo(methodOn(ProjetoController.class).findById(x.getKey())).withSelfRel()));
 		return listVo;
 	}
 	
@@ -42,6 +45,7 @@ public class ProjetoService {
 		}
 		Projeto proj = DozerMapper.parseObjectForEntity(projetoVo, Projeto.class);
 		ProjetoVo vo = DozerMapper.parseObjectForEntity(repository.save(proj), ProjetoVo.class);
+		vo.add(linkTo(methodOn(ProjetoController.class).findById(proj.getId())).withSelfRel());
 		return vo;
 	}
 	
@@ -53,6 +57,7 @@ public class ProjetoService {
 				() -> new ResponseNotFoundHandlerException("Id not found"));
 		projeto.setAreaEmpreendimento(projetoVo.getAreaEmpreendimento());
 		ProjetoVo vo = DozerMapper.parseObjectForEntity(repository.save(projeto), ProjetoVo.class);
+		vo.add(linkTo(methodOn(ProjetoController.class).findById(projeto.getId())).withSelfRel());
 		return vo;
 				
 	}

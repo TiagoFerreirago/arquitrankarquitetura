@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import com.architrack.controller.DocumentoController;
 import com.architrack.dozermapper.DozerMapper;
 import com.architrack.entities.Documento;
 import com.architrack.exception.ResponseBadRequestHandlerException;
@@ -26,6 +27,7 @@ public class DocumentoService {
 		Documento documento = repository.findById(id).orElseThrow(
 				() -> new ResponseNotFoundHandlerException("Id not found"));
 		DocumentoVo vo = DozerMapper.parseObjectForEntity(documento, DocumentoVo.class);
+		vo.add(linkTo(methodOn(DocumentoController.class).findById(id)).withSelfRel());
 		return vo;
 		
 	}
@@ -33,6 +35,7 @@ public class DocumentoService {
 	public List<DocumentoVo> findAll() {
 		List<Documento>documento = repository.findAll();
 		List<DocumentoVo>listVo = DozerMapper.parseListObjectForEntity(documento, DocumentoVo.class);
+		listVo.stream().forEach(x -> x.add(linkTo(methodOn(DocumentoController.class).findById(x.getKey())).withSelfRel()));
 		return listVo;
 	}
 	
@@ -42,6 +45,7 @@ public class DocumentoService {
 		}
 		Documento arq = DozerMapper.parseObjectForEntity(documentoVo, Documento.class);
 		DocumentoVo vo = DozerMapper.parseObjectForEntity(repository.save(arq), DocumentoVo.class);
+		vo.add(linkTo(methodOn(DocumentoController.class).findById(arq.getId())).withSelfRel());
 		return vo;
 	}
 	
@@ -56,6 +60,7 @@ public class DocumentoService {
 		documento.setTipoDocumento(documentoVo.getTipoDocumento());
 		
 		DocumentoVo vo = DozerMapper.parseObjectForEntity(repository.save(documento), DocumentoVo.class);
+		vo.add(linkTo(methodOn(DocumentoController.class).findById(documento.getId())).withSelfRel());
 		return vo;
 	}
 	

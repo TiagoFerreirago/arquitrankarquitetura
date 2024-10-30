@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import com.architrack.controller.ArquitetoController;
 import com.architrack.dozermapper.DozerMapper;
 import com.architrack.entities.Arquiteto;
 import com.architrack.exception.ResponseBadRequestHandlerException;
@@ -29,6 +30,7 @@ public class ArquitetoService {
 		Arquiteto arquiteto = repository.findById(id).orElseThrow(
 				() -> new ResponseNotFoundHandlerException("Id not found"));
 		ArquitetoVo vo = DozerMapper.parseObjectForEntity(arquiteto, ArquitetoVo.class);
+		vo.add(linkTo(methodOn(ArquitetoController.class).findById(id)).withSelfRel());
 		return vo;
 		
 	}
@@ -36,6 +38,7 @@ public class ArquitetoService {
 	public List<ArquitetoVo> findAll() {
 		List<Arquiteto>arquiteto = repository.findAll();
 		List<ArquitetoVo>listVo = DozerMapper.parseListObjectForEntity(arquiteto, ArquitetoVo.class);
+		listVo.stream().forEach(x -> x.add(linkTo(methodOn(ArquitetoController.class).findById(x.getKey())).withSelfRel()));
 		return listVo;
 	}
 	@Transactional
@@ -45,6 +48,7 @@ public class ArquitetoService {
 		}
 		Arquiteto arq = DozerMapper.parseObjectForEntity(arquiteto, Arquiteto.class);
 		ArquitetoVo vo = DozerMapper.parseObjectForEntity(repository.save(arq), ArquitetoVo.class);
+		vo.add(linkTo(methodOn(ArquitetoController.class).findById(arq.getId())).withSelfRel());
 		return vo;
 	}
 	@Transactional
@@ -64,6 +68,7 @@ public class ArquitetoService {
 		
 		var vo = DozerMapper.parseObjectForEntity(repository.save(arquiteto), ArquitetoVo.class);
 		
+		vo.add(linkTo(methodOn(ArquitetoController.class).findById(arquiteto.getId())).withSelfRel());
 		return vo;
 	}
 	@Transactional

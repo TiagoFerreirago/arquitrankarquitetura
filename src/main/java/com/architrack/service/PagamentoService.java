@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import com.architrack.controller.PagamentoController;
 import com.architrack.dozermapper.DozerMapper;
 import com.architrack.entities.Pagamentos;
 import com.architrack.exception.ResponseBadRequestHandlerException;
@@ -26,6 +27,7 @@ public class PagamentoService {
 		Pagamentos pagamentos = repository.findById(id).orElseThrow(
 				() -> new ResponseNotFoundHandlerException("Id not found"));
 		PagamentosVo vo = DozerMapper.parseObjectForEntity(pagamentos, PagamentosVo.class);
+		vo.add(linkTo(methodOn(PagamentoController.class).findById(id)).withSelfRel());
 		return vo;
 	}
 	
@@ -33,6 +35,7 @@ public class PagamentoService {
 		
 		List<Pagamentos> pagamentos = repository.findAll();
 		List<PagamentosVo> listVo = DozerMapper.parseListObjectForEntity(pagamentos, PagamentosVo.class);
+		listVo.stream().forEach(x -> x.add(linkTo(methodOn(PagamentoController.class).findById(x.getKey())).withSelfRel()));
 		return listVo;
 	}
 	
@@ -42,6 +45,7 @@ public class PagamentoService {
 		}
 		Pagamentos pag = DozerMapper.parseObjectForEntity(pagamentosVo, Pagamentos.class);
 		PagamentosVo vo = DozerMapper.parseObjectForEntity(repository.save(pag), PagamentosVo.class);
+		vo.add(linkTo(methodOn(PagamentoController.class).findById(pag.getId())).withSelfRel());
 		return vo;
 	}
 	
@@ -55,6 +59,7 @@ public class PagamentoService {
 		pagamento.setStatus(pagamentoVo.getStatus());
 		pagamento.setValor(pagamentoVo.getValor());
 		PagamentosVo vo = DozerMapper.parseObjectForEntity(repository.save(pagamento), PagamentosVo.class);
+		vo.add(linkTo(methodOn(PagamentoController.class).findById(pagamento.getId())).withSelfRel());
 		return vo;
 	}
 	
