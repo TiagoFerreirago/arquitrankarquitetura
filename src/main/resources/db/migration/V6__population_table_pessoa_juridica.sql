@@ -1,0 +1,1 @@
+INSERT INTO `pessoa_juridica` VALUES (1,'112.345.678/0001-99','123456789');
