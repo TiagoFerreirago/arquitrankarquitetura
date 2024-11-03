@@ -8,7 +8,7 @@ import com.architrack.entities.Cliente;
 import com.architrack.entities.PessoaFisica;
 import com.architrack.entities.PessoaJuridica;
 import com.architrack.entities.Projeto;
-import com.architrack.test.vo.ClienteVo;
+import com.architrack.vo.v1.ClienteVo;
 
 
 public class MockCliente {

@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.architrack.entities.Historico;
 import com.architrack.entities.Projeto;
-import com.architrack.test.vo.HistoricoVo;
+import com.architrack.vo.v1.HistoricoVo;
 
 public class MockHistorico {
 

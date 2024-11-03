@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.architrack.entities.Cliente;
 import com.architrack.entities.Projeto;
-import com.architrack.test.vo.ProjetoVo;
+import com.architrack.vo.v1.ProjetoVo;
 
 public class MockProjeto {
 

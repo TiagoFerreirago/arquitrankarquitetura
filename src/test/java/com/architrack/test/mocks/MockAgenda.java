@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.architrack.entities.Agenda;
 import com.architrack.entities.Projeto;
-import com.architrack.test.vo.AgendaVo;
+import com.architrack.vo.v1.AgendaVo;
 
 public class MockAgenda {
 

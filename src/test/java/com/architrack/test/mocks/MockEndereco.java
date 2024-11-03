@@ -6,7 +6,7 @@ import java.util.List;
 import com.architrack.entities.Arquiteto;
 import com.architrack.entities.Cliente;
 import com.architrack.entities.Endereco;
-import com.architrack.test.vo.EnderecoVo;
+import com.architrack.vo.v1.EnderecoVo;
 
 public class MockEndereco {
 

@@ -8,7 +8,7 @@ import java.util.List;
 import com.architrack.entities.Cliente;
 import com.architrack.entities.Documento;
 import com.architrack.entities.Projeto;
-import com.architrack.test.vo.DocumentoVo;
+import com.architrack.vo.v1.DocumentoVo;
 
 public class MockDocumento {
 

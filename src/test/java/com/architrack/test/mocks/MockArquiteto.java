@@ -8,7 +8,7 @@ import com.architrack.entities.Arquiteto;
 import com.architrack.entities.Endereco;
 import com.architrack.entities.Projeto;
 import com.architrack.entities.TipoPessoa;
-import com.architrack.test.vo.ArquitetoVo;
+import com.architrack.vo.v1.ArquitetoVo;
 
 
 public class MockArquiteto {

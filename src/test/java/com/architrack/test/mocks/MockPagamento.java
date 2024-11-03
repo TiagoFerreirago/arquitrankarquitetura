@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.architrack.entities.Pagamentos;
 import com.architrack.entities.Projeto;
-import com.architrack.test.vo.PagamentosVo;
+import com.architrack.vo.v1.PagamentosVo;
 
 public class MockPagamento {
 
