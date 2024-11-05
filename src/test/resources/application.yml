@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/architrack?useTimezone=true&serverTimezone=UTC
+    username: root
+    password: 91349808
+    
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+cors:
+  originpatterns: https://www.architrack.com,http://localhost:8080,http://localhost:3000
+  
+server:
+  port: 8888
