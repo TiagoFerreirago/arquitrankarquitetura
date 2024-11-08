@@ -1,4 +1,4 @@
-package com.architrack.integrationtest.tescontainers.swagger;
+package com.architrack.integrationtest.testcontainers.swagger;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertTrue;
