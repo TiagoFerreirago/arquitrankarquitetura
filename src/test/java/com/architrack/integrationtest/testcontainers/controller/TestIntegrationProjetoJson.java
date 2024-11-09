@@ -1,26 +1,24 @@
 package com.architrack.integrationtest.testcontainers.controller;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.architrack.entities.PessoaFisica;
-import com.architrack.entities.Projeto;
+import com.architrack.entities.Cliente;
 import com.architrack.integrationtest.testcontainers.swagger.AbstractIntegrationTest;
-import com.architrack.test.vo.ClienteVo;
+import com.architrack.test.vo.ProjetoVo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
@@ -29,39 +27,48 @@ import io.restassured.specification.RequestSpecification;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(OrderAnnotation.class)
-public class TestIntegrationClienteJson extends AbstractIntegrationTest {
+public class TestIntegrationProjetoJson extends AbstractIntegrationTest  {
 
-	
-	private static RequestSpecification specification;
 	
 	private static ObjectMapper objectMapper;
 	
-	private static ClienteVo cliente;
+	private static RequestSpecification specification;
+	
+	private static ProjetoVo projeto;
 	
 	@BeforeAll
-	public static void setup() {
-		cliente = new ClienteVo();
+	private static void setup() {
+		
 		objectMapper = new ObjectMapper();
 		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		
+		projeto = new ProjetoVo();
 	}
 	
-	
+	public void mockProjeto() {
+		
+		Cliente cliente = new Cliente();
+		cliente.setId(4L);
+		
+		projeto.setAreaEmpreendimento("Construção civil");
+		projeto.setCliente(cliente);
+		projeto.setKey(1L);
+	}
 	@Test
 	@Order(1)
 	public void testCreate() throws JsonMappingException, JsonProcessingException {
-		mockCliente();
-		
+		mockProjeto();
 		specification = new RequestSpecBuilder()
 				.addHeader("Origin", "http://localhost:8080")
-				.setBasePath("/api/v1/cliente")
 				.setPort(8888)
+				.setBasePath("/api/v1/projeto")
 				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
 				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
 		
-		
-		var content = given().spec(specification)
+		var content = given()
+				.spec(specification)
 				.contentType("application/json")
-				.body(cliente)
+				.body(projeto)
 				.when()
 				.post()
 				.then()
@@ -69,40 +76,36 @@ public class TestIntegrationClienteJson extends AbstractIntegrationTest {
 				.extract()
 				.body().asString();
 		
-		ClienteVo person = objectMapper.readValue(content, ClienteVo.class);
-		cliente = person;
+		ProjetoVo person = objectMapper.readValue(content, ProjetoVo.class);
+		person = projeto;
 		
-		assertTrue(person.getKey() > 0);
 		assertNotNull(person);
-		assertNotNull(person.getEmail());
+		assertNotNull(person.getCliente());
 		assertNotNull(person.getKey());
-		assertNotNull(person.getNome());
-		assertNotNull(person.getPf());
-		assertNotNull(person.getTelefone());
-		
+		assertNotNull(person.getAreaEmpreendimento());
+
 		assertEquals(1, person.getKey());
-		assertEquals("gustavo@gmail.com", person.getEmail());
-		assertEquals("Gustavo Lima", person.getNome());
-		assertEquals("81-123456789", person.getTelefone());
-		assertEquals("765321456-10", person.getPf().getRg());
-		assertEquals("897456321-59", person.getPf().getCpf());
-				
-				
+		assertEquals(4, person.getCliente().getId());
+		assertEquals("Construção civil", person.getAreaEmpreendimento());
+
+
 	}
+	
 	@Test
 	@Order(2)
 	public void testCreateWithOriginInvalid() {
 		
 		specification = new RequestSpecBuilder()
 				.addHeader("Origin", "http://www.siteinvalido.com")
-				.setBasePath("/api/v1/cliente")
+				.setBasePath("api/v1/projeto")
 				.setPort(8888)
 				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
-				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
+				.addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+				.build();
 		
 		var content = given().spec(specification)
 				.contentType("application/json")
-				.body(cliente)
+				.body(projeto)
 				.when()
 				.post()
 				.then()
@@ -110,25 +113,26 @@ public class TestIntegrationClienteJson extends AbstractIntegrationTest {
 				.extract()
 				.body()
 				.asString();
-		
+				
+			
 		assertNotNull(content);
 		assertEquals("Invalid CORS request",content);
 	}
+	
 	@Test
 	@Order(3)
 	public void testFindById() throws JsonMappingException, JsonProcessingException {
 		
 		specification = new RequestSpecBuilder()
 				.addHeader("Origin","http://localhost:8080")
-				.setBasePath("/api/v1/cliente")
+				.setBasePath("api/v1/projeto")
 				.setPort(8888)
 				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
 				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
 		
-		var content = given()
-				.spec(specification)
+		var content = given().spec(specification)
 				.contentType("application/json")
-				.pathParam("id", cliente.getKey())
+				.pathParam("id", projeto.getKey())
 				.when()
 				.get("{id}")
 				.then()
@@ -137,38 +141,31 @@ public class TestIntegrationClienteJson extends AbstractIntegrationTest {
 				.body()
 				.asString();
 		
+		ProjetoVo person = objectMapper.readValue(content, ProjetoVo.class);
+		projeto = person;
 		
-		ClienteVo person = objectMapper.readValue(content, ClienteVo.class);
-		cliente = person;
-		
-		assertTrue(person.getKey() > 0);
 		assertNotNull(person);
-		assertNotNull(person.getEmail());
 		assertNotNull(person.getKey());
-		assertNotNull(person.getNome());
-		assertNotNull(person.getTelefone());
-		
+		assertNotNull(person.getAreaEmpreendimento());
+
 		assertEquals(1, person.getKey());
-		assertEquals("gustavo@gmail.com", person.getEmail());
-		assertEquals("Gustavo Lima", person.getNome());
-		assertEquals("81-123456789", person.getTelefone());
-		
+		assertEquals("Construção civil", person.getAreaEmpreendimento());
 	}
+	
 	@Test
 	@Order(4)
 	public void testFindByIdOriginInvalid() {
 		
 		specification = new RequestSpecBuilder()
 				.addHeader("Origin", "http://www.siteinvalido.com")
-				.setBasePath("/api/v1/cliente")
+				.setBasePath("api/v1/projeto")
 				.setPort(8888)
 				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
 				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
 		
-		var content = given()
-				.spec(specification)
+		var content = given().spec(specification)
 				.contentType("application/json")
-				.pathParam("id", cliente.getKey())
+				.pathParam("id", projeto.getKey())
 				.when()
 				.get("{id}")
 				.then()
@@ -180,19 +177,5 @@ public class TestIntegrationClienteJson extends AbstractIntegrationTest {
 		assertNotNull(content);
 		assertEquals("Invalid CORS request",content);
 	}
-	
-	private void mockCliente() {
-		PessoaFisica tipo = new PessoaFisica("765321456-10", "897456321-59", null);
-		Projeto projeto = new Projeto();
-		projeto.setId(1L);
-		cliente.setEmail("gustavo@gmail.com");
-		cliente.setKey(1L);
-		cliente.setNome("Gustavo Lima");
-		cliente.setPf(tipo);
-		cliente.setPj(null);
-		cliente.setProjeto(projeto);
-		cliente.setTelefone("81-123456789");
-	}
-	
 	
 }

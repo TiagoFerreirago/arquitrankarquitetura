@@ -1,16 +1,18 @@
 package com.architrack.integrationtest.testcontainers.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.architrack.entities.PessoaFisica;
 import com.architrack.entities.Projeto;
 import com.architrack.integrationtest.testcontainers.swagger.AbstractIntegrationTest;
-import com.architrack.test.vo.ClienteVo;
+import com.architrack.test.vo.PagamentosVo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -18,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.restassured.builder.RequestSpecBuilder;
@@ -29,39 +30,55 @@ import io.restassured.specification.RequestSpecification;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(OrderAnnotation.class)
-public class TestIntegrationClienteJson extends AbstractIntegrationTest {
+public class TestIntegrationPagamentoJson extends AbstractIntegrationTest  {
 
+	private static ObjectMapper objectMapper;
 	
 	private static RequestSpecification specification;
 	
-	private static ObjectMapper objectMapper;
-	
-	private static ClienteVo cliente;
+	private static PagamentosVo pagamento;
 	
 	@BeforeAll
-	public static void setup() {
-		cliente = new ClienteVo();
+	private static void setup() {
+		
 		objectMapper = new ObjectMapper();
 		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		
+		pagamento = new PagamentosVo();
 	}
 	
-	
+	public void mockPagamentos() {
+		
+		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+		Projeto projeto = new Projeto();
+		projeto.setId(4L);
+		
+		try {
+			pagamento.setDataPagamento(format.parse("08/11/2024"));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		pagamento.setKey(1L);
+		pagamento.setProjeto(projeto);
+		pagamento.setStatus("Concluido");
+		pagamento.setValor(54000.00);
+	}
 	@Test
 	@Order(1)
 	public void testCreate() throws JsonMappingException, JsonProcessingException {
-		mockCliente();
-		
-		specification = new RequestSpecBuilder()
-				.addHeader("Origin", "http://localhost:8080")
-				.setBasePath("/api/v1/cliente")
+		mockPagamentos();
+		specification = new RequestSpecBuilder().
+				addHeader("Origin","http://localhost:8080")
 				.setPort(8888)
+				.setBasePath("/api/v1/pagamento")
 				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
 				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
+				
 		
-		
-		var content = given().spec(specification)
+		var content = given()
+				.spec(specification)
 				.contentType("application/json")
-				.body(cliente)
+				.body(pagamento)
 				.when()
 				.post()
 				.then()
@@ -69,40 +86,39 @@ public class TestIntegrationClienteJson extends AbstractIntegrationTest {
 				.extract()
 				.body().asString();
 		
-		ClienteVo person = objectMapper.readValue(content, ClienteVo.class);
-		cliente = person;
+		PagamentosVo person = objectMapper.readValue(content, PagamentosVo.class);
+		person = pagamento;
 		
-		assertTrue(person.getKey() > 0);
 		assertNotNull(person);
-		assertNotNull(person.getEmail());
+		assertNotNull(person.getDataPagamento());
 		assertNotNull(person.getKey());
-		assertNotNull(person.getNome());
-		assertNotNull(person.getPf());
-		assertNotNull(person.getTelefone());
+		assertNotNull(person.getStatus());
+		assertNotNull(person.getValor());
+		assertNotNull(person.getProjeto());
 		
+		assertEquals("Concluido", person.getStatus());
+		assertEquals(54000D, person.getValor());
 		assertEquals(1, person.getKey());
-		assertEquals("gustavo@gmail.com", person.getEmail());
-		assertEquals("Gustavo Lima", person.getNome());
-		assertEquals("81-123456789", person.getTelefone());
-		assertEquals("765321456-10", person.getPf().getRg());
-		assertEquals("897456321-59", person.getPf().getCpf());
-				
-				
+		assertEquals(4, person.getProjeto().getId());
+		assertEquals("Fri Nov 08 00:00:00 BRT 2024", person.getDataPagamento().toString());
+		
 	}
+	
 	@Test
 	@Order(2)
 	public void testCreateWithOriginInvalid() {
 		
 		specification = new RequestSpecBuilder()
 				.addHeader("Origin", "http://www.siteinvalido.com")
-				.setBasePath("/api/v1/cliente")
+				.setBasePath("api/v1/pagamento")
 				.setPort(8888)
 				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
-				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
+				.addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+				.build();
 		
 		var content = given().spec(specification)
 				.contentType("application/json")
-				.body(cliente)
+				.body(pagamento)
 				.when()
 				.post()
 				.then()
@@ -110,25 +126,26 @@ public class TestIntegrationClienteJson extends AbstractIntegrationTest {
 				.extract()
 				.body()
 				.asString();
-		
+				
+			
 		assertNotNull(content);
 		assertEquals("Invalid CORS request",content);
 	}
+	
 	@Test
 	@Order(3)
 	public void testFindById() throws JsonMappingException, JsonProcessingException {
-		
+		mockPagamentos();
 		specification = new RequestSpecBuilder()
 				.addHeader("Origin","http://localhost:8080")
-				.setBasePath("/api/v1/cliente")
+				.setBasePath("api/v1/pagamento")
 				.setPort(8888)
 				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
 				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
 		
-		var content = given()
-				.spec(specification)
+		var content = given().spec(specification)
 				.contentType("application/json")
-				.pathParam("id", cliente.getKey())
+				.pathParam("id", pagamento.getKey())
 				.when()
 				.get("{id}")
 				.then()
@@ -137,38 +154,35 @@ public class TestIntegrationClienteJson extends AbstractIntegrationTest {
 				.body()
 				.asString();
 		
+		PagamentosVo person = objectMapper.readValue(content, PagamentosVo.class);
+		pagamento = person;
 		
-		ClienteVo person = objectMapper.readValue(content, ClienteVo.class);
-		cliente = person;
-		
-		assertTrue(person.getKey() > 0);
 		assertNotNull(person);
-		assertNotNull(person.getEmail());
+		assertNotNull(person.getDataPagamento());
 		assertNotNull(person.getKey());
-		assertNotNull(person.getNome());
-		assertNotNull(person.getTelefone());
+		assertNotNull(person.getStatus());
+		assertNotNull(person.getValor());
 		
+		assertEquals("Concluido", person.getStatus());
+		assertEquals(54000D, person.getValor());
 		assertEquals(1, person.getKey());
-		assertEquals("gustavo@gmail.com", person.getEmail());
-		assertEquals("Gustavo Lima", person.getNome());
-		assertEquals("81-123456789", person.getTelefone());
-		
+		assertEquals("Fri Nov 08 00:00:00 BRT 2024", person.getDataPagamento().toString());
 	}
+	
 	@Test
 	@Order(4)
 	public void testFindByIdOriginInvalid() {
 		
 		specification = new RequestSpecBuilder()
 				.addHeader("Origin", "http://www.siteinvalido.com")
-				.setBasePath("/api/v1/cliente")
+				.setBasePath("api/v1/pagamento")
 				.setPort(8888)
 				.addFilter(new RequestLoggingFilter(LogDetail.ALL))
 				.addFilter(new ResponseLoggingFilter(LogDetail.ALL)).build();
 		
-		var content = given()
-				.spec(specification)
+		var content = given().spec(specification)
 				.contentType("application/json")
-				.pathParam("id", cliente.getKey())
+				.pathParam("id", pagamento.getKey())
 				.when()
 				.get("{id}")
 				.then()
@@ -180,19 +194,4 @@ public class TestIntegrationClienteJson extends AbstractIntegrationTest {
 		assertNotNull(content);
 		assertEquals("Invalid CORS request",content);
 	}
-	
-	private void mockCliente() {
-		PessoaFisica tipo = new PessoaFisica("765321456-10", "897456321-59", null);
-		Projeto projeto = new Projeto();
-		projeto.setId(1L);
-		cliente.setEmail("gustavo@gmail.com");
-		cliente.setKey(1L);
-		cliente.setNome("Gustavo Lima");
-		cliente.setPf(tipo);
-		cliente.setPj(null);
-		cliente.setProjeto(projeto);
-		cliente.setTelefone("81-123456789");
-	}
-	
-	
 }
