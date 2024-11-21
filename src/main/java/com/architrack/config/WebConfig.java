@@ -48,12 +48,15 @@ public class WebConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
-		var allowedOrigins = originPatterns.split(",");
-		registry.addMapping("/**")
-		.allowedMethods("*")
-		.allowedOrigins(allowedOrigins)
-		.allowCredentials(true);
+	    // Divide a string de origens permitidas em um array
+	    String[] allowedOrigins = originPatterns.split(",");
+
+	    registry.addMapping("/**")
+	            .allowedMethods("*")
+	            .allowedOrigins(allowedOrigins)
+	            .allowCredentials(true);
 	}
+
 	
 	
 	

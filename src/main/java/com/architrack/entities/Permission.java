@@ -11,7 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Table(name = "permission")
+@Table(name = "user_permission")
 @Entity
 public class Permission implements Serializable, GrantedAuthority {
 
